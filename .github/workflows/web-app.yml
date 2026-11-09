@@ -1,0 +1,36 @@
+name: Web app (iPhone and any browser)
+on:
+  workflow_dispatch:
+  push:
+    paths: ["www/**", "pwa/**", "package.json", ".github/workflows/web-app.yml"]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - name: Assemble the site
+        run: |
+          mkdir site && cp -r www/* site/ && cp pwa/* site/
+          curl -fL -o site/bible-en.json https://raw.githubusercontent.com/thiagobodruk/bible/master/json/en_kjv.json || true
+          curl -fL -o site/bible-fr.json https://raw.githubusercontent.com/thiagobodruk/bible/master/json/fr_apee.json || true
+          sed -i '1s/^\xEF\xBB\xBF//' site/bible-*.json || true
+          cp node_modules/firebase/firebase-app-compat.js node_modules/firebase/firebase-auth-compat.js node_modules/firebase/firebase-firestore-compat.js site/ || true
+          sed -i 's|</head>|<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#FFB800"></head>|' site/index.html
+          sed -i "s|</body>|<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')</script></body>|" site/index.html
+          sed -i "s/__V__/${{ github.run_number }}/" site/sw.js
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: d
+        uses: actions/deploy-pages@v4
