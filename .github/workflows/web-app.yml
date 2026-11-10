@@ -26,7 +26,7 @@ jobs:
           curl -fL -o site/bible-fr.json https://raw.githubusercontent.com/thiagobodruk/bible/master/json/fr_apee.json || true
           sed -i '1s/^\xEF\xBB\xBF//' site/bible-*.json || true
           cp node_modules/firebase/firebase-app-compat.js node_modules/firebase/firebase-auth-compat.js node_modules/firebase/firebase-firestore-compat.js site/ || true
-          sed -i 's|</head>|<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#FFB800"></head>|' site/index.html
+          sed -i 's|</head>|<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-512.png"><meta name="theme-color" content="#FFB800"></head>|' site/index.html
           sed -i "s|</body>|<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')</script></body>|" site/index.html
           sed -i "s/__V__/${{ github.run_number }}/" site/sw.js
       - uses: actions/upload-pages-artifact@v3
