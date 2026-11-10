@@ -23,6 +23,16 @@ jobs:
           sed -i '1s/^\xEF\xBB\xBF//' www/bible-*.json || true
           cp node_modules/firebase/firebase-app-compat.js node_modules/firebase/firebase-auth-compat.js node_modules/firebase/firebase-firestore-compat.js www/ || true
       - run: npx cap add android
+      - name: App icon (your logo)
+        run: |
+          sudo apt-get install -y imagemagick
+          for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+            n=${d%%:*}; s=${d##*:}
+            for f in ic_launcher ic_launcher_round ic_launcher_foreground; do
+              convert assets/icon-only.png -resize ${s}x${s} android/app/src/main/res/mipmap-$n/$f.png
+            done
+          done
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
       - name: Permissions and version
         run: |
           M=android/app/src/main/AndroidManifest.xml
